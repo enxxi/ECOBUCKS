@@ -18,8 +18,10 @@ const challengeController = {
 
   challengeGetAll: async function (req, res, next) {
     try {
-      const challenge = await ChallengeService.findChallenges( );
-      res.status(OK).send(challenge);
+      const { itemsPerPage, cursor } = req.query;
+
+      const { challenges, nextCursor } = await ChallengeService.findChallenges(itemsPerPage, cursor);
+      res.status(OK).send({ challenges, nextCursor });
     } catch (error) {
       next(error);
     }

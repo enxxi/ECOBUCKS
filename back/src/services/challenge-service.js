@@ -31,13 +31,28 @@ class ChallengeService {
     return createdNewChallenge;
   }
 
-  static async findChallenges() {
-    const challenges = await Challenge.NoAsyncfindAll().populate('userId', 'userName districtCode districtName').exec();
-  
+  static async findChallenges(itemsPerPage, cursor) {
+    let query = {};
+
+    if (cursor) {
+      query = { _id : {$gt: cursor } };
+      console.log('cursor',cursor.slice(0,-1))
+    }
+
+    const challenges = await Challenge.NoAsyncfindAll()
+      .find(query)
+      .limit(parseInt(itemsPerPage))
+      .populate('userId', 'userName districtCode districtName')
+      .exec();
+
     if (!challenges) {
       throw setError("챌린지 게시물을 찾을 수 없습니다.", 404, "NOT_FOUND")
     }
-    return challenges
+
+    // 다음 커서 값 설정
+    const nextCursor = challenges[challenges.length - 1]?._id;
+
+    return { challenges, nextCursor };
   }
 
   static async findChallenge({ chllengeId }) {
